@@ -1,0 +1,43 @@
+# .github/workflows/client.yml
+# reference 브랜치에서 push 이벤트를 트리거하고, Node.js 프로젝트의 종속성을 설치하고 빌드한 다음, 
+# AWS CLI 버전을 표시하고, 로컬 디렉토리를 S3 버킷과 동기화한다. 이 때, 작업 디렉토리는 ./my-agora-states-client로 설정되었다.
+
+name: prac # 자동으로 처리할 액션의 이름 (여기서는 prac)
+on: # 언제 이 액션이 실행될지 명시 (reference 브랜치에서 git push시 실행)
+  push:  
+    branches:
+      - reference
+jobs: # 구체적으로 실행할 내용
+  build:
+    runs-on: ubuntu-20.04 # 배포 실행될 환경
+    steps: # 각 단계의 이름과 실행내용을 나열
+
+      - name: Checkout source code.
+        uses: actions/checkout@v2
+
+      # 빌드를 하기 위한 모듈 설치
+      - name: Install dependencies   
+        run: npm install # 실행할 명령어 제공 
+        working-directory: ./my-agora-states-client # 배포할 클라이언트의 디렉토리명
+
+      - name: Build
+        run: npm run build
+        working-directory: ./my-agora-states-client
+
+      # AWS의 버전을 확인하는 단계로 엑세스 키, 시크릿 키가 필요
+      - name: SHOW AWS CLI VERSION
+        run: |
+          aws --version
+
+      # 빌드한 클라이언트를 버킷에 배포
+      - name: Sync Bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # 시크릿 매니저를 제공하며, 이를 통해 비밀 변수를 안전하게 저장하고 액세스
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # GitHub Actions에서 시크릿 매니저에 저장된 AWS 키 ID에 대한 참조
+          AWS_EC2_METADATA_DISABLED: true
+        run: |
+          aws s3 sync \
+            --region ap-northeast-2 \ 
+            build s3://fe-75-doyu-lee-s3 \
+            --delete
+        working-directory: ./my-agora-states-client

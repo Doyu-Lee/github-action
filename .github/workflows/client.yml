@@ -36,7 +36,8 @@ jobs: # 구체적으로 실행할 내용
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }} # GitHub Actions에서 시크릿 매니저에 저장된 AWS 키 ID에 대한 참조
           AWS_EC2_METADATA_DISABLED: true
         run: |
-          aws s3 sync build s3://fe-75-doyu-lee-s3
-            --region ap-northeast-2
+          aws s3 sync \
+            --region ap-northeast-2  \
+            ./build s3://fe-75-doyu-lee-s3 \
             --delete
         working-directory: ./my-agora-states-client-react

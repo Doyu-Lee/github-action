@@ -38,6 +38,6 @@ jobs: # 구체적으로 실행할 내용
         run: |
           aws s3 sync   \
           --region ap-northeast-2   \
-          ./build s3://fe-75-doyu-lee-s3   \
+          ./build s3://fe-75-doyu-lee-s3   
           --delete
         working-directory: ./my-agora-states-client-react
